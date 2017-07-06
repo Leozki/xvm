@@ -5,6 +5,8 @@
 #ifndef XVM_SCRIPT_H
 #define XVM_SCRIPT_H
 
+#include "Constants.h"
+
 typedef struct _Value {
     int iType;
     union {
@@ -84,5 +86,8 @@ typedef struct _Script {
     HostAPICallTable HostAPICallTable;
 } Script;
 
+int LoadScript(char *pstrFilename, int *iThdIndex);
 
+extern Script g_Scripts[MAX_THREAD_COUNT];
+extern int g_iCurrThread;
 #endif //XVM_SCRIPT_H
