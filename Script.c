@@ -4,12 +4,29 @@
 
 #include <stdio.h>
 #include <malloc.h>
-#include <mem.h>
+#include <afxres.h>
+#include <conio.h>
 #include "Script.h"
 #include "Stack.h"
 
+
 Script g_Scripts[MAX_THREAD_COUNT];
 int g_iCurrThread; // 当前正在运行的线程索引
+int g_iCurrThreadActiveTime; // 当前线程激活的时间
+
+// 支持的关键字
+char g_ppstrMnemonics[][12] =
+        {
+                "Mov",
+                "Add", "Sub", "Mul", "Div", "Mod", "Exp", "Neg", "Inc", "Dec",
+                "And", "Or", "XOr", "Not", "ShL", "ShR",
+                "Concat", "GetChar", "SetChar",
+                "Jmp", "JE", "JNE", "JG", "JL", "JGE", "JLE",
+                "Push", "Pop",
+                "Call", "Ret", "CallHost",
+                "Pause", "Exit"
+        };
+
 
 void ResetScript(int iThreadIndex) {
     int iMainFuncIndex = g_Scripts[iThreadIndex].iMainFuncIndex;
@@ -271,4 +288,70 @@ int LoadScript(char *pstrFilename, int *iThdIndex) {
     g_Scripts[iThreadIndex].iIsRunning = TRUE;
     ResetScript(iThreadIndex);
     return LOAD_OK;
+}
+
+
+int GetCurrTime() {
+    return (int) GetTickCount();
+}
+
+void RunScripts() {
+    int iExitExecLoop = FALSE;
+
+    int iCurrInstr;
+    g_iCurrThreadActiveTime = GetCurrTime();
+    int iCurrTime;
+
+    while (!kbhit()) {
+
+        iCurrTime = GetCurrTime();
+        if (iCurrTime > g_iCurrThreadActiveTime + THREAD_TIMESLICE_DUR ||
+            !g_Scripts[g_iCurrThread].iIsRunning) {
+
+            while (TRUE) {
+                ++g_iCurrThread;
+                if (g_iCurrThread >= MAX_THREAD_COUNT)
+                    g_iCurrThread = 0;
+                if (g_Scripts[g_iCurrThread].iIsActive && g_Scripts[g_iCurrThread].iIsRunning)
+                    break;
+            }
+            g_iCurrThreadActiveTime = iCurrTime;
+        }
+
+
+        if (g_Scripts[g_iCurrThread].iIsPaused) {
+            if (iCurrTime >= g_Scripts[g_iCurrThread].iPauseEndTime) {
+                g_Scripts[g_iCurrThread].iIsPaused = FALSE;
+            } else {
+                continue;
+            }
+        }
+
+
+        iCurrInstr = g_Scripts[g_iCurrThread].InstrStream.iCurrInstr;
+
+        int iOpcode = g_Scripts[g_iCurrThread].InstrStream.pInstrs[iCurrInstr].iOpcode;
+
+        ++iCurrInstr;
+        printf("\t%d", g_iCurrThread);
+        printf("\t");
+        if (iOpcode < 10)
+            printf(" %d", iOpcode);
+        else
+            printf("%d", iOpcode);
+        printf(" %s ", g_ppstrMnemonics[iOpcode]);
+
+        // 处理OpCode
+
+        switch (iOpcode) {
+            default:
+                break;
+        }
+
+        printf("\n");
+
+        if (iExitExecLoop)
+            break;
+        g_Scripts[g_iCurrThread].InstrStream.iCurrInstr = iCurrInstr;
+    }
 }

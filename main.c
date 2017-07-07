@@ -81,7 +81,7 @@ int main(int argc, char *argv[]) {
     }
     free(pstrScriptFilenames);
 
-
+    RunScripts();
 
     return 0;
 }

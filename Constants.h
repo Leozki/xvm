@@ -43,5 +43,6 @@
 #define OP_TYPE_HOST_API_CALL_INDEX 7
 #define OP_TYPE_REG                 8
 
+#define THREAD_TIMESLICE_DUR 20 // 每个线程的时间片,20毫秒
 
 #endif //XVM_CONSTANTS_H

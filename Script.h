@@ -86,7 +86,11 @@ typedef struct _Script {
     HostAPICallTable HostAPICallTable;
 } Script;
 
+
+int GetCurrTime ();
 int LoadScript(char *pstrFilename, int *iThdIndex);
+void RunScripts ();
+
 
 extern Script g_Scripts[MAX_THREAD_COUNT];
 extern int g_iCurrThread;
